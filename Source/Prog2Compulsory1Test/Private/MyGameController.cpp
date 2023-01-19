@@ -76,6 +76,12 @@ void AMyGameController::DeclareWinner(int i)
 	bGamePlaying = false;
 }
 
+void AMyGameController::ClientSetPlayerId_Implementation(int32 Id)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("client set player id fired"));
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::FromInt(Id));
+}
+
 // Sets default values
 AMyGameController::AMyGameController()
 {

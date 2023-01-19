@@ -43,13 +43,24 @@ public:
 		UStaticMesh* SphereMesh;
 protected:
 	void GetAllTicTacSpheres(int32 Index);
+
 	void DeclareWinner(int i);
+
 	DECLARE_DELEGATE_OneParam(MyDelegate, int32);
+
 	bool bIsPlayer1Turn = true;
+
 	bool bGamePlaying = true;
 
+	int playerId;
+
+	UFUNCTION(Client, Reliable)
+		void ClientSetPlayerId(int32 Id);
+
 	UStaticMeshComponent* Mesh;
+
 	UPROPERTY(meta = (AllowPrivateAccess = "true"), EditAnywhere)
 		USpringArmComponent* SpringArm;
+
 	UCameraComponent* Camera;
 };
