@@ -9,11 +9,6 @@ void AMyGameController::GetAllTicTacSpheres(int32 Index)
 {
 	if (bGamePlaying)
 	{
-		//TArray<AActor*> ActorsToFind;
-		//FString a = "sphere ";
-		//a.AppendInt(Index);
-		//UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ATicTacSphere::StaticClass(), FName(*a), ActorsToFind);
-		//ATicTacSphere* TicTacSphere = Cast<ATicTacSphere>(ActorsToFind[0]);
 		ATicTacSphere* TicTacSphere = SphereArray[Index];
 
 		if (!TicTacSphere->bIsLocked)
