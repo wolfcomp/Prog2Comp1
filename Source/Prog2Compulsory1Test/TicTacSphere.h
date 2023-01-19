@@ -3,6 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
 #include "TicTacSphere.generated.h"
 
 UCLASS()
@@ -24,7 +27,11 @@ public:
 
 private:
 	UMaterialInstanceDynamic* DynamicMaterial;
+	UStaticMeshComponent* Mesh;
 public:
 	void SetColor(FVector4 NewColor);
 	bool bIsLocked = false;
+	void SetMaterial(UMaterialInterface* NewMaterial);
+	void SetRadius(float NewRadius);
+	void SetMesh(UStaticMesh* NewMesh);
 };

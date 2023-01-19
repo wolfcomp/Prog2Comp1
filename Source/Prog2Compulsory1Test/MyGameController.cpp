@@ -3,18 +3,18 @@
 
 #include "MyGameController.h"
 #include "TicTacSphere.h"
-#include "Kismet/GameplayStatics.h"
 
 //function to find all actors of a class
 void AMyGameController::GetAllTicTacSpheres(int32 Index)
 {
-	if(bGamePlaying)
+	if (bGamePlaying)
 	{
-		TArray<AActor*> ActorsToFind;
-		FString a = "sphere ";
-		a.AppendInt(Index);
-		UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ATicTacSphere::StaticClass(), FName(*a), ActorsToFind);
-		ATicTacSphere* TicTacSphere = Cast<ATicTacSphere>(ActorsToFind[0]);
+		//TArray<AActor*> ActorsToFind;
+		//FString a = "sphere ";
+		//a.AppendInt(Index);
+		//UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ATicTacSphere::StaticClass(), FName(*a), ActorsToFind);
+		//ATicTacSphere* TicTacSphere = Cast<ATicTacSphere>(ActorsToFind[0]);
+		ATicTacSphere* TicTacSphere = SphereArray[Index];
 
 		if (!TicTacSphere->bIsLocked)
 		{
@@ -23,37 +23,39 @@ void AMyGameController::GetAllTicTacSpheres(int32 Index)
 				if (bIsPlayer1Turn)
 				{
 					TicTacSphere->SetColor(FVector4(0, 0, 1, 1));
-					gamestate[Index] = 1;
+					GameState[Index] = 1;
 				}
 				else
 				{
 					TicTacSphere->SetColor(FVector4(1, 0, 0, 1));
-					gamestate[Index] = 2;
+					GameState[Index] = 2;
 				}
 			}
 			bIsPlayer1Turn = !bIsPlayer1Turn;
 			//check for win condition here
-			for (int i = 1; i <=2; i++)
+			for (int i = 1; i <= 2; i++)
 			{
-				if(
-					(gamestate[0] == i && gamestate[4] == i && gamestate[8] == i) ||
-					(gamestate[2] == i && gamestate[4] == i && gamestate[6] == i) ||
-					(gamestate[0] == i && gamestate[1] == i && gamestate[2] == i) ||
-					(gamestate[3] == i && gamestate[4] == i && gamestate[5] == i) ||
-					(gamestate[6] == i && gamestate[7] == i && gamestate[8] == i) ||
-					(gamestate[0] == i && gamestate[3] == i && gamestate[6] == i) ||
-					(gamestate[1] == i && gamestate[4] == i && gamestate[7] == i) ||
-					(gamestate[2] == i && gamestate[5] == i && gamestate[8] == i))
+				bool bWin = false;
+				for (int j = 0; j < 3; ++j)
 				{
-					if (!bIsPlayer1Turn)
+					if (GameState[j] == i && GameState[j + 3] == i && GameState[j + 6] == i)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("p1wins"));
+						bWin = true;
 					}
-					else
+					if (GameState[j * 3] == i && GameState[j * 3 + 1] == i && GameState[j * 3 + 2] == i)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("p2wins"));
+						bWin = true;
 					}
-					bGamePlaying = false;
+				}
+				if ((GameState[0] == i && GameState[4] == i && GameState[8] == i)
+					||
+					(GameState[2] == i && GameState[4] == i && GameState[6] == i))
+				{
+					bWin = true;
+				}
+				if (bWin)
+				{
+					DeclareWinner(i);
 				}
 			}
 		}
@@ -77,30 +79,44 @@ void AMyGameController::DeclareWinner(int i)
 // Sets default values
 AMyGameController::AMyGameController()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
+	SphereArray.Init(nullptr, 9);
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	SetRootComponent(Mesh);
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(RootComponent);
+
+	SpringArm->TargetArmLength = 800.f;
+	SpringArm->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
+	SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 200));
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm);
 }
 
 // Called when the game starts or when spawned
 void AMyGameController::BeginPlay()
 {
 	Super::BeginPlay();
-	//start code taken and modified from https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/HowTo/FindingActors/
-	TArray<AActor*> ActorsToFind;
-	if (UWorld* World = GetWorld())
-	{
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATicTacSphere::StaticClass(), ActorsToFind);
-	}
-	//end code taken
 
-	for (AActor* TicTacSphereActor : ActorsToFind)
+	for (int i = 0; i < 3; ++i)
 	{
-		ATicTacSphere* TicTacSphereCast = Cast<ATicTacSphere>(TicTacSphereActor);
-		if (TicTacSphereCast)
+		for (int j = 0; j < 3; ++j)
 		{
-			GameSpheres.Add(TicTacSphereCast);
+			float x = (i - 1) * SphereDistance;
+			float y = (j - 1) * SphereDistance;
+			auto sphere = GetWorld()->SpawnActor<ATicTacSphere>(FVector(x, y, 0), FRotator(0, 0, 0));
+			sphere->SetMesh(SphereMesh);
+			sphere->SetRadius(SphereRadius);
+			sphere->SetMaterial(Material);
+			if(i == 1 && j == 1)
+				SetRootComponent(sphere->GetRootComponent());
+			SphereArray[i * 3 + j] = sphere;
 		}
 	}
 }
