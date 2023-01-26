@@ -31,7 +31,7 @@ void ATTTGameMode::HandleStartingNewPlayer_Implementation(APlayerController* New
 	{
 		SpawnTransform = FoundActors.Last()->GetActorTransform();
 		UE::Math::TVector Location = SpawnTransform.GetLocation();
-		Location.X += 1000;
+		Location.X += 4000;
 		SpawnTransform.SetLocation(Location);
 	}
 
