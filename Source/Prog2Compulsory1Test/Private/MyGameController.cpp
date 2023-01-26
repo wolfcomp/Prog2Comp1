@@ -82,7 +82,12 @@ AMyGameController::AMyGameController()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+	const ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMeshFinder(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
+	this->SphereMesh = SphereMeshFinder.Object;
+
+	const ConstructorHelpers::FObjectFinder<UMaterial> MaterialFinder(TEXT("Material'/Game/NewMaterial.NewMaterial'"));
+	this->Material = MaterialFinder.Object;
 
 	SphereArray.Init(nullptr, 9);
 
@@ -94,7 +99,7 @@ AMyGameController::AMyGameController()
 
 	SpringArm->TargetArmLength = 800.f;
 	SpringArm->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
-	SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 200));
+	SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 800));
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -115,8 +120,7 @@ void AMyGameController::BeginPlay()
 			sphere->SetMesh(SphereMesh);
 			sphere->SetRadius(SphereRadius);
 			sphere->SetMaterial(Material);
-			if(i == 1 && j == 1)
-				SetRootComponent(sphere->GetRootComponent());
+			sphere->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
 			SphereArray[i * 3 + j] = sphere;
 		}
 	}

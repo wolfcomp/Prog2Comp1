@@ -34,7 +34,7 @@ public:
 	int GameState[9] = { 0,0,0,0,0,0,0,0,0 };
 
 	UPROPERTY(EditAnywhere)
-		float SphereRadius = 100.0f;
+		float SphereRadius = 1.f;
 	UPROPERTY(EditAnywhere)
 		float SphereDistance = 200.0f;
 	UPROPERTY(EditAnywhere)
